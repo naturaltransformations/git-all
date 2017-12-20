@@ -1,0 +1,47 @@
+#!/bin/bash
+
+function show_help() {
+  echo "git-all, a simple wrapper for multiple git repositories. Usage:
+  --dir         - set dir with working git repositories, defaults to current directory
+  --help        - show this message"
+}
+
+function print_header() {
+    printf "\033[0;36m$1 \033[0m\n"
+}
+
+gitdir=`pwd`
+
+while true ; do
+    case "$1" in
+    --dir)
+        gitdir=$2
+        shift
+        ;;
+    --help)
+        show_help
+        exit 0
+        ;;
+    * )
+        command=$@
+        break
+        ;;
+    esac
+    shift
+done
+
+
+if [[ "$gitdir" != "" ]]; then
+    repos=`find "${gitdir}" -name .git -type d -print`
+    while read repo; do
+        repo=`dirname $repo`
+        cd $repo
+        if [[ ! -d .git ]]; then
+            continue
+        fi
+
+        print_header $repo
+        git $command
+    done <<< "$repos"
+fi
+
